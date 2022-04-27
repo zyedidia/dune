@@ -550,6 +550,7 @@ int dune_enter(void)
 
 	if (ret) {
 		free_percpu(percpu);
+		dune_apic_free();
 		return ret;
 	}
 
@@ -674,11 +675,17 @@ int dune_init(bool map_full)
 	}
 
 	setup_idt();
+	if (!dune_setup_apic()) {
+		printf("dune: could not set up APIC\n");
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	return 0;
 
 err:
 	// FIXME: need to free memory
+	dune_apic_free();
 fail_pgroot:
 	close(dune_fd);
 fail_open:

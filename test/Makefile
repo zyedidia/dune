@@ -3,7 +3,7 @@ CFLAGS	:= -Wall -g -MD -O2 -I ../
 LDFLAGS := -ldune -lpthread
 MODULE_LIB := /lib/modules/$(shell uname -r)/build
 
-tests_files := hello test timetest test_sandbox hugepages hugepages_mod.ko mprotect fork
+tests_files := hello test timetest test_sandbox hugepages hugepages_mod.ko mprotect fork posted_ipi
 
 obj-m += hugepages_mod.o
 
@@ -17,6 +17,9 @@ mprotect: mprotect.o ../libdune/libdune.a
 
 fork: fork.o ../libdune/libdune.a
 	$(CC) $(CFLAGS) -static $(<) -L../libdune $(LDFLAGS) -o $(@)
+
+posted_ipi: posted_ipi.o ../libdune/libdune.a
+	$(CC) $(CFLAGS) -static $(<) -L../libdune/ $(LDFLAGS) -o $(@)
 
 timetest: timetest.o ../libdune/libdune.a
 	$(CC) $(CFLAGS) -static $(<) -L../libdune $(LDFLAGS) -o $(@)
