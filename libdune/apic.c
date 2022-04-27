@@ -11,15 +11,15 @@
 #include "cpu-x86.h"
 
 //the value to write to the EOI register when an interrupt handler has finished
-#define APIC_ID_MSR 0x802
+#define APIC_ID_MSR	 0x802
 #define APIC_ICR_MSR 0x830
 #define APIC_EOI_MSR 0x80B
 
-#define APIC_DM_FIXED 0x00000
-#define NMI_VECTOR 0x02
-#define APIC_DM_NMI 0x00400
+#define APIC_DM_FIXED	   0x00000
+#define NMI_VECTOR		   0x02
+#define APIC_DM_NMI		   0x00400
 #define APIC_DEST_PHYSICAL 0x00000
-#define EOI_ACK 0x0
+#define EOI_ACK			   0x0
 
 static int *apic_routing;
 static int num_rt_entries;
@@ -59,13 +59,15 @@ void dune_apic_init_rt_entry()
 uint32_t dune_apic_id_for_cpu(uint32_t cpu, bool *error)
 {
 	if (cpu >= num_rt_entries) {
-		if (error) *error = true;
+		if (error)
+			*error = true;
 		return 0;
 	}
 	return apic_routing[cpu];
 }
 
-static inline unsigned int __prepare_ICR(unsigned int shortcut, int vector, unsigned int dest)
+static inline unsigned int __prepare_ICR(unsigned int shortcut, int vector,
+										 unsigned int dest)
 {
 	unsigned int icr = shortcut | dest;
 

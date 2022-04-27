@@ -23,14 +23,16 @@ void *t_start(void *arg)
 {
 	volatile int ret = dune_enter();
 	if (ret) {
-		printf("posted_ipi: failed to enter dune in thread %d\n", sched_getcpu());
+		printf("posted_ipi: failed to enter dune in thread %d\n",
+			   sched_getcpu());
 		return NULL;
 	}
 	dune_apic_init_rt_entry();
 	dune_register_intr_handler(TEST_VECTOR, test_handler);
 	asm volatile("mfence" ::: "memory");
 	*(volatile bool *)arg = true;
-	while (true);
+	while (true)
+		;
 	return NULL;
 }
 
@@ -60,7 +62,8 @@ int main(int argc, char *argv[])
 		printf("failed to initialize dune\n");
 		return ret;
 	}
-	printf("posted_ipi: now printing from dune mode on core %d\n", sched_getcpu());
+	printf("posted_ipi: now printing from dune mode on core %d\n",
+		   sched_getcpu());
 	dune_apic_init_rt_entry();
 
 	for (i = 0; i < NUM_THREADS; i++) {
@@ -74,7 +77,8 @@ int main(int argc, char *argv[])
 	}
 
 	for (i = 0; i < NUM_THREADS; i++) {
-		while (!ready[i]);
+		while (!ready[i])
+			;
 	}
 	asm volatile("mfence" ::: "memory");
 

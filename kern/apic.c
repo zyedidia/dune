@@ -7,12 +7,17 @@
 #include "dune.h"
 
 #define XAPIC_EOI_OFFSET 0xB0
-#define APIC_EOI_ACK 0x0
+#define APIC_EOI_ACK	 0x0
 
 static int *apic_routing;
 static int num_rt_entries;
 
-#define BY_APIC_TYPE(x, x2) if (x2apic_enabled()) { x2; } else { x; }
+#define BY_APIC_TYPE(x, x2)                                                    \
+	if (x2apic_enabled()) {                                                    \
+		x2;                                                                    \
+	} else {                                                                   \
+		x;                                                                     \
+	}
 
 u32 dune_apic_id(void)
 {
@@ -27,13 +32,16 @@ static u32 dune_highest_apic_id(bool *error)
 	int ret = -1;
 	int cpu;
 
-	if (error) *error = false;
-	for_each_possible_cpu(cpu) {
+	if (error)
+		*error = false;
+	for_each_possible_cpu (cpu) {
 		int apic_id = per_cpu(x86_cpu_to_apicid, cpu);
-		if (apic_id > ret) ret = apic_id;
+		if (apic_id > ret)
+			ret = apic_id;
 	}
 	if (ret == -1) {
-		if (error) *error = true;
+		if (error)
+			*error = true;
 		return 0;
 	}
 	return ret;
@@ -71,7 +79,8 @@ void dune_apic_init_rt_entry(void)
 u32 dune_apic_get_cpu_id_for_apic(u32 apic, bool *error)
 {
 	if (apic >= num_rt_entries) {
-		if (error) *error = true;
+		if (error)
+			*error = true;
 		return 0;
 	}
 	return apic_routing[apic];
@@ -87,7 +96,9 @@ u32 dune_apic_get_cpu_id_for_apic(u32 apic, bool *error)
 static inline void dune_apic_write_x(u32 reg, u32 v)
 {
 	volatile u32 *addr = (volatile u32 *)(APIC_BASE + reg);
-	asm volatile("movl %0, %P1" : "=r" (v), "=m" (*addr) : "i" (0), "0" (v), "m" (*addr));
+	asm volatile("movl %0, %P1"
+				 : "=r"(v), "=m"(*addr)
+				 : "i"(0), "0"(v), "m"(*addr));
 }
 
 /* dune_apic_send_ipi_x2
@@ -101,7 +112,8 @@ static void dune_apic_send_ipi_x2(u8 vector, u32 destination_apic_id)
 	u32 low;
 	low = __prepare_ICR(0, vector, APIC_DEST_PHYSICAL);
 	x2apic_wrmsr_fence();
-	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), ((__u64) destination_apic_id) << 32 | low);
+	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4),
+		   ((__u64)destination_apic_id) << 32 | low);
 }
 
 /* dune_apic_send_ipi_x
@@ -112,7 +124,8 @@ static void dune_apic_send_ipi_x2(u8 vector, u32 destination_apic_id)
  */
 static void dune_apic_send_ipi_x(u8 vector, u8 destination_apic_id)
 {
-	__default_send_IPI_dest_field(destination_apic_id, vector, APIC_DEST_PHYSICAL);
+	__default_send_IPI_dest_field(destination_apic_id, vector,
+								  APIC_DEST_PHYSICAL);
 }
 
 /* dune_apic_send_ipi

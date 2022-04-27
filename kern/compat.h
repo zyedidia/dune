@@ -82,9 +82,8 @@ static inline bool dune_tboot_enabled(void)
 #endif
 
 #ifndef VMX_EPT_EXTENT_INDIVIDUAL_ADDR
-#define VMX_EPT_EXTENT_INDIVIDUAL_ADDR          0
+#define VMX_EPT_EXTENT_INDIVIDUAL_ADDR 0
 #endif
-
 
 #ifndef X86_CR4_PCIDE
 #define X86_CR4_PCIDE 0x00020000 /* enable PCID support */
@@ -200,7 +199,7 @@ static inline unsigned long __read_cr4(void)
 	return read_cr4();
 }
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 13, 0)
 static inline void cr4_set_bits(unsigned long mask)
 {
 	write_cr4(read_cr4() | mask);
