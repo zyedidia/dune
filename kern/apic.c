@@ -2,8 +2,8 @@
 
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <asm/ipi.h>
 
+#include "ipi.h"
 #include "dune.h"
 
 #define XAPIC_EOI_OFFSET 0xB0
@@ -111,7 +111,7 @@ static void dune_apic_send_ipi_x2(u8 vector, u32 destination_apic_id)
 {
 	u32 low;
 	low = __prepare_ICR(0, vector, APIC_DEST_PHYSICAL);
-	x2apic_wrmsr_fence();
+	weak_wrmsr_fence();
 	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4),
 		   ((__u64)destination_apic_id) << 32 | low);
 }
