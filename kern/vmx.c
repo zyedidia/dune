@@ -1737,7 +1737,7 @@ static void vmx_handle_external_interrupt(struct vmx_vcpu *vcpu,
 		register unsigned long current_stack_pointer asm(_ASM_SP);
 		vector = exit_intr_info & INTR_INFO_VECTOR_MASK;
 		desc = (gate_desc *)vcpu->idt_base + vector;
-		entry = gate_offset(*desc);
+		entry = gate_offset(desc);
 
 		if (vector == POSTED_INTR_VECTOR) {
 			dune_apic_write_eoi();
