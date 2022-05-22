@@ -118,12 +118,13 @@ static inline int epte_big(epte_t epte)
 static unsigned long hva_to_gpa(struct vmx_vcpu *vcpu, struct mm_struct *mm,
 								unsigned long hva)
 {
-	uintptr_t mmap_start, stack_start;
+	uintptr_t mmap_start, stack_start, code_start;
 	uintptr_t phys_end = (1ULL << boot_cpu_data.x86_phys_bits);
 	uintptr_t gpa;
 
 	BUG_ON(!mm);
 
+	code_start = LG_ALIGN(mm->start_code) - GPA_CODE_SIZE;
 	mmap_start = LG_ALIGN(mm->mmap_base) - GPA_MAP_SIZE;
 	stack_start = LG_ALIGN(mm->start_stack) - GPA_STACK_SIZE;
 
@@ -135,8 +136,13 @@ static unsigned long hva_to_gpa(struct vmx_vcpu *vcpu, struct mm_struct *mm,
 		if (hva - mmap_start >= GPA_MAP_SIZE)
 			return ADDR_INVAL;
 		gpa = hva - mmap_start + phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE;
+	} else if (hva >= code_start) {
+		if (hva - code_start >= GPA_CODE_SIZE)
+			return ADDR_INVAL;
+		gpa = hva - code_start + phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE -
+			  GPA_CODE_SIZE;
 	} else {
-		if (hva >= phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE)
+		if (hva >= phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE - GPA_CODE_SIZE)
 			return ADDR_INVAL;
 		gpa = hva;
 	}
@@ -147,18 +153,24 @@ static unsigned long hva_to_gpa(struct vmx_vcpu *vcpu, struct mm_struct *mm,
 static unsigned long gpa_to_hva(struct vmx_vcpu *vcpu, struct mm_struct *mm,
 								unsigned long gpa)
 {
+	uintptr_t hva;
 	uintptr_t phys_end = (1ULL << boot_cpu_data.x86_phys_bits);
 
-	if (gpa < phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE)
-		return gpa;
+	if (gpa < phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE - GPA_CODE_SIZE)
+		hva = gpa;
+	else if (gpa < phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE)
+		hva = gpa - (phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE - GPA_CODE_SIZE) +
+			  LG_ALIGN(mm->start_code) - GPA_CODE_SIZE;
 	else if (gpa < phys_end - GPA_STACK_SIZE)
-		return gpa - (phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE) +
-			   LG_ALIGN(mm->mmap_base) - GPA_MAP_SIZE;
+		hva = gpa - (phys_end - GPA_STACK_SIZE - GPA_MAP_SIZE) +
+			  LG_ALIGN(mm->mmap_base) - GPA_MAP_SIZE;
 	else if (gpa < phys_end)
-		return gpa - (phys_end - GPA_STACK_SIZE) + LG_ALIGN(mm->start_stack) -
-			   GPA_STACK_SIZE;
+		hva = gpa - (phys_end - GPA_STACK_SIZE) + LG_ALIGN(mm->start_stack) -
+			  GPA_STACK_SIZE;
 	else
 		return ADDR_INVAL;
+
+	return hva;
 }
 
 #define ADDR_TO_IDX(la, n)                                                     \

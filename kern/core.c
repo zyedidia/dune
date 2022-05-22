@@ -99,6 +99,7 @@ static long dune_dev_ioctl(struct file *filp, unsigned int ioctl,
 
 	case DUNE_GET_LAYOUT:
 		layout.phys_limit = (1UL << boot_cpu_data.x86_phys_bits);
+		layout.base_code = LG_ALIGN(current->mm->start_code) - GPA_CODE_SIZE;
 		layout.base_map = LG_ALIGN(current->mm->mmap_base) - GPA_MAP_SIZE;
 		layout.base_stack = LG_ALIGN(current->mm->start_stack) - GPA_STACK_SIZE;
 		r = copy_to_user((void __user *)arg, &layout,

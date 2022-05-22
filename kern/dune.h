@@ -51,6 +51,7 @@ struct dune_config {
 
 struct dune_layout {
 	__u64 phys_limit;
+	__u64 base_code;
 	__u64 base_map;
 	__u64 base_stack;
 } __attribute__((packed));
@@ -87,9 +88,11 @@ struct dune_trap_config {
 	__u8 delay;
 } __attribute__((packed));
 
+#define GPA_CODE_SIZE  ((unsigned long)1 << 30) /* 1 gigabyte */
 #define GPA_STACK_SIZE ((unsigned long)1 << 30) /* 1 gigabyte */
 #define GPA_MAP_SIZE                                                           \
-	(((unsigned long)1 << 36) - GPA_STACK_SIZE) /* 63 gigabytes */
+	(((unsigned long)1 << 36) - GPA_STACK_SIZE -                               \
+	 GPA_CODE_SIZE) /* 62 gigabytes */
 #define LG_ALIGN(addr) ((addr + (1 << 30) - 1) & ~((1 << 30) - 1))
 
 #endif /* __ASSEMBLY__ */

@@ -172,8 +172,14 @@ static inline void dune_page_put(struct page *pg)
 
 extern ptent_t *pgroot;
 extern uintptr_t phys_limit;
+extern uintptr_t code_base;
 extern uintptr_t mmap_base;
 extern uintptr_t stack_base;
+
+static inline uintptr_t dune_code_addr_to_pa(void *ptr)
+{
+	return ((uintptr_t)ptr) - code_base + phys_limit - GPA_STACK_SIZE - GPA_MAP_SIZE - GPA_CODE_SIZE;
+}
 
 static inline uintptr_t dune_mmap_addr_to_pa(void *ptr)
 {
@@ -192,6 +198,8 @@ static inline uintptr_t dune_va_to_pa(void *ptr)
 		return dune_stack_addr_to_pa(ptr);
 	else if ((uintptr_t)ptr >= mmap_base)
 		return dune_mmap_addr_to_pa(ptr);
+	else if ((uintptr_t)ptr >= code_base)
+		return dune_code_addr_to_pa(ptr);
 	else
 		return (uintptr_t)ptr;
 }
@@ -336,18 +344,18 @@ extern int dune_enter();
 
 /**
  * dune_init_and_enter - initializes libdune and enters "Dune mode"
- * 
+ *
  * This is a simple initialization routine that handles everything
  * in one go. Note that you still need to call dune_enter() in
  * each new forked child or thread.
- * 
+ *
  * Returns 0 on success, otherwise failure.
  */
 static inline int dune_init_and_enter(void)
 {
 	int ret;
 
-	if ((ret = dune_init(1)))
+	if ((ret = dune_init(0)))
 		return ret;
 
 	return dune_enter();

@@ -10,7 +10,7 @@ obj-m += hugepages_mod.o
 all: $(tests_files)
 
 hello: hello.o ../libdune/libdune.a
-	$(CC) $(CFLAGS) -static $(<) -L../libdune/ $(LDFLAGS) -o $(@)
+	$(CC) $(CFLAGS) $(<) $(LDFLAGS) -o $(@)
 
 mprotect: mprotect.o ../libdune/libdune.a
 	$(CC) $(CFLAGS) -static $(<) -L../libdune $(LDFLAGS) -o $(@)

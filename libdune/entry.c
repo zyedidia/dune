@@ -35,6 +35,7 @@
 
 ptent_t *pgroot;
 uintptr_t phys_limit;
+uintptr_t code_base;
 uintptr_t mmap_base;
 uintptr_t stack_base;
 
@@ -391,6 +392,7 @@ static int setup_mappings(bool full)
 		return ret;
 
 	phys_limit = layout.phys_limit;
+	code_base = layout.base_code;
 	mmap_base = layout.base_map;
 	stack_base = layout.base_stack;
 
@@ -398,6 +400,8 @@ static int setup_mappings(bool full)
 		ret = __setup_mappings_full(&layout);
 	else
 		ret = __setup_mappings_precise();
+
+	/* dune_procmap_dump(); */
 
 	return ret;
 }
@@ -465,7 +469,7 @@ static int do_dune_enter(struct dune_percpu *percpu)
 	conf->vcpu = 0;
 	conf->rip = (__u64)&__dune_ret;
 	conf->rsp = 0;
-	conf->cr3 = (physaddr_t)pgroot;
+	conf->cr3 = dune_code_addr_to_pa(pgroot);
 	conf->rflags = 0x2;
 
 	/* NOTE: We don't setup the general purpose registers because __dune_ret
