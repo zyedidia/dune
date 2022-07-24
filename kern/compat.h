@@ -89,6 +89,7 @@ static inline bool dune_tboot_enabled(void)
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
+#include <linux/gfp.h>
 static inline struct page *alloc_pages_exact_node(int nid, gfp_t gfp_mask,
 												  unsigned int order)
 {
